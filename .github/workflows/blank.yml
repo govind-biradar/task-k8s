@@ -31,10 +31,6 @@ jobs:
     - name: Log in to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-      with:
-        mask-password: true
-        registry-type: private
-        skip-logout: false
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
@@ -48,3 +44,16 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push -f demo/Dockerfile demo
+
+    - name: Configure kubectl
+      uses: azure/setup-kubectl@v1
+      with:
+        version: 'latest'
+        
+    - name: Deploy to Kubernetes
+      env:
+        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        kubectl set image deployment/demo-app-deployment dockersrepo=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
