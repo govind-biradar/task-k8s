@@ -46,10 +46,9 @@ jobs:
         docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push -f demo/Dockerfile demo
 
     - name: Configure kubectl
-      uses: azure/setup-kubectl@v1
-      with:
-        version: 'latest'
-        
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+
     - name: Deploy to Kubernetes
       env:
         ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
