@@ -11,7 +11,7 @@ on:
       image_tag:
         description: 'Docker image tag'
         required: true
-        default: ${{ github.sha }}
+        default: 'v10'
         type: string
 
 jobs:
