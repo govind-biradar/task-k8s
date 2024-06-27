@@ -49,16 +49,18 @@ jobs:
         IMAGE_TAG: ${{ github.event.inputs.image_tag }}
       run: |
         docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push -f demo/Dockerfile demo
+   
+    deploy:
+      steps:
+      - name: Configure kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
 
-    - name: Configure kubectl
-      run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
-
-    - name: Deploy to Kubernetes
-      env:
-        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-        IMAGE_TAG: ${{ github.event.inputs.image_tag }}
-      run: |
-        kubectl set image deployment/demo-app-deployment dockersrepo=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      - name: Deploy to Kubernetes
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+        run: |
+          kubectl set image deployment/demo-app-deployment dockersrepo=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
