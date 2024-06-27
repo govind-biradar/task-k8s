@@ -40,9 +40,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
+
     - name: Build and push Docker image
       if: ${{ github.event.inputs.apply_plan == 'yes' }}
       env:
