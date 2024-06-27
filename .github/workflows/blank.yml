@@ -40,7 +40,9 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
-
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
     - name: Build and push Docker image
       if: ${{ github.event.inputs.apply_plan == 'yes' }}
       env:
@@ -49,18 +51,16 @@ jobs:
         IMAGE_TAG: ${{ github.event.inputs.image_tag }}
       run: |
         docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push -f demo/Dockerfile demo
-   
-    deploy:
-      steps:
-      - name: Configure kubectl
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
 
-      - name: Deploy to Kubernetes
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
-        run: |
-          kubectl set image deployment/demo-app-deployment dockersrepo=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    - name: Configure kubectl
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+
+    - name: Deploy to Kubernetes
+      env:
+        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+      run: |
+        kubectl set image deployment/demo-app-deployment dockersrepo=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
